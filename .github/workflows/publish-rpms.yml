@@ -1,0 +1,47 @@
+name: Publish RPMs
+
+on:
+  workflow_dispatch:
+    inputs:
+      kmod_name:
+        description: Name of the akmod to build (e.g. nvidia)
+        required: true
+        default: nvidia
+
+permissions:
+  id-token: write
+  contents: read
+
+jobs:
+  launch-builder:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ vars.RPM_BUILDER_ROLE_ARN }}
+          aws-region: ca-central-1
+
+      - name: Generate user data
+        run: |
+          sed \
+            -e "s/__KMOD_NAME__/${{ inputs.kmod_name }}/g" \
+            -e "s/__REPO_BUCKET_NAME__/${{ vars.REPO_BUCKET_NAME }}/g" \
+            -e "s/__GPG_SECRET_NAME__/${{ vars.GPG_SECRET_NAME }}/g" \
+            scripts/userdata.sh | base64 -w 0 > userdata.b64
+
+      - name: Launch spot instance
+        run: |
+          aws ec2 run-instances \
+            --image-id "${{ vars.FEDORA_ARM64_AMI_ID }}" \
+            --instance-type t4g.micro \
+            --instance-market-options '{"MarketType":"spot"}' \
+            --iam-instance-profile "Name=${{ vars.KMOD_BUILDER_INSTANCE_PROFILE_NAME }}" \
+            --subnet-id "${{ vars.SUBNET_ID }}" \
+            --user-data file://userdata.b64 \
+            --tag-specifications \
+              "ResourceType=instance,Tags=[{Key=Name,Value=kmod-builder-aarch64-${{ inputs.kmod_name }}}]" \
+            --region ca-central-1

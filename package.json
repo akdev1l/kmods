@@ -1,0 +1,25 @@
+{
+  "name": "kmod-repo",
+  "version": "1.0.0",
+  "description": "",
+"main": "dist/index.js",
+  "files": [
+    "dist/"
+  ],
+  "scripts": {
+    "release": "pnpm run build-sandbox",
+    "bootstrap": "cdk bootstrap",
+    "build-sandbox": "tsc && cdk synth --quiet -c environment=sandbox",
+    "deploy-sandbox": "cdk deploy -c environment=sandbox", 
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "packageManager": "pnpm@10.33.0",
+  "devDependencies": {
+    "aws-cdk": "^2.1128.1",
+    "aws-cdk-lib": "^2.260.0",
+    "typescript": "^6.0.3"
+  }
+}

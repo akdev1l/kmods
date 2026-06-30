@@ -1,0 +1,15 @@
+{
+    "app": "node build/dist/index.js",
+    "output": "build/cdk.out",
+    "context": {
+        "sandbox": {
+            "repositoryBucketName": "xyz-akdev-sandbox-dnf-repo",
+            "domainName": "repo.sandbox.akdev.xyz"
+        },
+        "prod": {
+            "repositoryBucketName": "xyz-akdev-prod-dnf-repo",
+            "domainName": "repo.prod.akdev.xyz"
+        },
+        "@aws-cdk/core:defaultCrossStackReferences": "strong"
+    }
+}
